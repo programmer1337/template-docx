@@ -1,0 +1,29 @@
+// # ------------ LAYER SETTINGS and LAYER TOOLS------------ # //
+@import '../../styles/include-settings-styles';
+
+// # ------------ LAYER COMPONENTS ------------ # //
+@layer components-shared {
+	.input-file {
+		display: flex;
+		align-items: center;
+		padding: 4px;
+		column-gap: 8px;
+		min-width: 120px;
+
+		border: 4px solid var(--cornflower);
+		border-radius: var(--br8);
+
+		cursor: pointer;
+
+		&__field {
+			display: none;
+		}
+
+		&__fake-button {
+			background-color: var(--cornflower);
+			border-radius: var(--br4);
+
+			padding: 8px;
+		}
+	}
+}

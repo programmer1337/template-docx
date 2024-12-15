@@ -1,0 +1,13 @@
+// # ------------ LAYER SETTINGS and LAYER TOOLS------------ # //
+@import "../../shared/styles/include-settings-styles";
+
+// # ------------ LAYER COMPONENTS ------------ # //
+@layer pages {
+	.some {
+		margin-bottom: 20px;
+
+		text-align: center;
+
+		color: var(--blue950);
+	}
+}

@@ -1,0 +1,16 @@
+// # ------------ LAYER SETTINGS and LAYER TOOLS------------ # //
+@import '../../styles/include-settings-styles';
+
+// # ------------ LAYER COMPONENTS ------------ # //
+@layer components-shared {
+	.button {
+		padding: 10px 24px;
+
+		border-radius: var(--br8);
+		background-color: var(--cornflower);
+
+		font-weight: 700;
+
+		//- # COLOR MODIFICATIONS # -//
+	}
+}

@@ -1,0 +1,26 @@
+// # ------------ LAYER SETTINGS and LAYER TOOLS------------ # //
+@import '../../shared/styles/include-settings-styles';
+
+// # ------------ LAYER COMPONENTS ------------ # //
+@layer components-entities {
+	.counterparties-table {
+		&__table {
+			margin-top: 24px;
+
+			border: 1px solid black;
+
+			tr {
+				border: 1px solid black;
+			}
+
+			td {
+				border: 1px solid black;
+			}
+		}
+
+		/* &__item {
+			display: flex;
+			flex-direction: column;
+		} */
+	}
+}

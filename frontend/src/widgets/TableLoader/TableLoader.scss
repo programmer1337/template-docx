@@ -1,0 +1,19 @@
+// # ------------ LAYER SETTINGS and LAYER TOOLS------------ # //
+@import "../../shared/styles/include-settings-styles";
+
+// # ------------ LAYER COMPONENTS ------------ # //
+@layer components-widgets {
+	.widgets-example {
+		margin-bottom: 20px;
+
+		font-size: var(--fs40);
+		font-weight: 800;
+
+		&__some-wrapper {
+			padding: 10px;
+
+			color: var(--blue500);
+			border: 5px solid var(--blue500);
+		}
+	}
+}

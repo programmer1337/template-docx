@@ -1,0 +1,11 @@
+// # ------------ LAYER SETTINGS and LAYER TOOLS------------ # //
+@import '../../shared/styles/include-settings-styles';
+
+// # ------------ LAYER COMPONENTS ------------ # //
+@layer components-features {
+	.xlsx-loader {
+		display: flex;
+		justify-content: center;
+		column-gap: 16px;
+	}
+}

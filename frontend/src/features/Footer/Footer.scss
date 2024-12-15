@@ -1,0 +1,34 @@
+// # ------------ LAYER SETTINGS and LAYER TOOLS------------ # //
+@import "../../shared/styles/include-settings-styles";
+
+// # ------------ LAYER COMPONENTS ------------ # //
+@layer components-features {
+	.footer {
+		display: flex;
+
+		align-items: center;
+		justify-content: center;
+
+		margin-bottom: 20px;
+
+		background: var(--red400);
+
+		font-size: var(--fs28);
+		padding-block: 30px;
+		column-gap: 90px;
+
+		a {
+			color: var(--gray0);
+
+			font-size: var(--fs28);
+
+			&:hover {
+				text-decoration: underline;
+			}
+		}
+
+		.active {
+			text-decoration: underline;
+		}
+	}
+}
