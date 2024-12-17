@@ -60,6 +60,7 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 
 	log.Print("Decode")
 	err := json.NewDecoder(r.Body).Decode(&counteparties)
+	r.Body.Close()
 	log.Print("after error")
 	if err != nil {
 		log.Print(err)
