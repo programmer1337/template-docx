@@ -18,9 +18,6 @@ export function CounterpartiesTable(props: ICounterpartiesTable) {
 			}
 		});
 
-		// eslint-disable-next-line no-console
-		console.log(process.env.REACT_APP_API_URL);
-
 		fetch(`http://${process.env.REACT_APP_API_URL}/api/replace`, {
 			method: 'POST',
 			body: JSON.stringify(body),

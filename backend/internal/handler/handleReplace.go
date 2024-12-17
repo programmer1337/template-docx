@@ -15,7 +15,7 @@ import (
 	"github.com/lukasjarosch/go-docx"
 )
 
-type Conteragent struct {
+type Counteparty struct {
 	Code_ou                               string `json:"code_ou"`
 	Inn                                   string `json:"inn"`
 	Institution_short_name                string `json:"institution_short_name"`
@@ -40,7 +40,7 @@ type Conteragent struct {
 	Category                              string `json:"category"`
 }
 
-type Conteragents []*Conteragent
+type Counteparties []*Counteparty
 
 func HandleReplace(serveMux *mux.Router, log *log.Logger) {
 	postRouter := serveMux.Methods(http.MethodPost).Subrouter()
@@ -48,7 +48,7 @@ func HandleReplace(serveMux *mux.Router, log *log.Logger) {
 }
 
 func Replace(w http.ResponseWriter, r *http.Request) {
-	var conteragents Conteragents
+	var counteparties Counteparties
 
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
@@ -56,42 +56,42 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&conteragents)
+	err := json.NewDecoder(r.Body).Decode(&counteparties)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	for _, conteragent := range conteragents {
+	for _, counteparty := range counteparties {
 		replaceMap := docx.PlaceholderMap{
-			"A": conteragent.Code_ou,
-			"B": conteragent.Inn,
-			"C": conteragent.Institution_short_name,
-			"D": conteragent.Institution_full_name,
-			"E": conteragent.Address,
-			"F": conteragent.City,
-			"G": conteragent.Bank_details,
-			"H": conteragent.Responsible_person_job_title,
-			"I": conteragent.Responsible_person_short_name,
-			"J": conteragent.Responsible_person_full_name,
-			"K": conteragent.Responsible_person_full_name_genitive,
-			"L": conteragent.Acting_on,
-			"M": conteragent.Ikz_2025,
-			"N": conteragent.Source_funding,
-			"O": conteragent.Email,
-			"P": conteragent.Phone_number,
-			"Q": conteragent.Contract_form,
-			"R": conteragent.Contract_type,
-			"S": conteragent.Contract_number,
-			"T": conteragent.Contract_formation_data,
-			"U": conteragent.Responsible_person_job_title_genetive,
-			"V": conteragent.Category,
+			"A": counteparty.Code_ou,
+			"B": counteparty.Inn,
+			"C": counteparty.Institution_short_name,
+			"D": counteparty.Institution_full_name,
+			"E": counteparty.Address,
+			"F": counteparty.City,
+			"G": counteparty.Bank_details,
+			"H": counteparty.Responsible_person_job_title,
+			"I": counteparty.Responsible_person_short_name,
+			"J": counteparty.Responsible_person_full_name,
+			"K": counteparty.Responsible_person_full_name_genitive,
+			"L": counteparty.Acting_on,
+			"M": counteparty.Ikz_2025,
+			"N": counteparty.Source_funding,
+			"O": counteparty.Email,
+			"P": counteparty.Phone_number,
+			"Q": counteparty.Contract_form,
+			"R": counteparty.Contract_type,
+			"S": counteparty.Contract_number,
+			"T": counteparty.Contract_formation_data,
+			"U": counteparty.Responsible_person_job_title_genetive,
+			"V": counteparty.Category,
 		}
 
 		// "./templates/type1.docx"
-		var pathToTemplate = "../templates/type" + conteragent.Contract_type + ".docx"
-		var pathToSave = "../replaced/" + conteragent.Inn + ".docx"
+		var pathToTemplate = "../templates/type" + counteparty.Contract_type + ".docx"
+		var pathToSave = "../replaced/" + counteparty.Inn + ".docx"
 		utils.PlaceholderReplacer(pathToTemplate, pathToSave, replaceMap)
 	}
 
