@@ -17,10 +17,14 @@ type Server struct {
 }
 
 func NewServer(handler http.Handler, logger *log.Logger) *Server {
+	domain := os.Getenv("DOMAIN_URL")
+	logger.Print(domain)
+	origins := []string{"http://" + domain, "https://" + domain}
+
 	return &Server{
 		httpServer: &http.Server{
 			Addr:    ":" + config.DefaultHTTPPort,
-			Handler: configureCORSFor(handler),
+			Handler: configureCORSFor(handler, origins),
 			// Handler:      handler,
 			IdleTimeout:  120 * time.Second,
 			WriteTimeout: 2 * time.Second,
@@ -41,14 +45,11 @@ func configureCORS() *cors.Cors {
 	})
 }
 
-func configureCORSFor(handler http.Handler) http.Handler {
-	domain := os.Getenv("DOMAIN_URL")
-	origin := "http://" + domain
-	sOrigin := "https://" + domain
-
+func configureCORSFor(handler http.Handler, origins []string) http.Handler {
 	ch := cors.New(cors.Options{
 		// # http://mywebsite-domain.com/ is configured in hosts (localhost:80 alias)
-		AllowedOrigins: []string{origin, sOrigin, "http://localhost:8080"},
+		// AllowedOrigins: []string{origins, "http://localhost:8080"},
+		AllowedOrigins: origins,
 		AllowedMethods: []string{"POST", "GET", "PUT", "DELETE"},
 		// AllowCredentials: true,
 
