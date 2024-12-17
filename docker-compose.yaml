@@ -36,6 +36,10 @@ services:
     volumes:
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
+<<<<<<< HEAD
+=======
+
+>>>>>>> 19858e2 (add new layout; update port;)
     ports:
       - "8000:8000"
     networks:

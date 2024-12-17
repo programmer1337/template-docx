@@ -76,7 +76,12 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 
 		var pathToTemplate = "../templates/type" + conteragent.Contract_type + ".docx"
 		var pathToSave = "../replaced/" + conteragent.Inn + ".docx"
-		utils.PlaceholderReplacer(pathToTemplate, pathToSave, replaceMap)
+
+		err = utils.PlaceholderReplacer(pathToTemplate, pathToSave, replaceMap)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("Error with placeholder [%v]", err), http.StatusInternalServerError)
+			return
+		}
 	}
 
 	//TODO Исправить
