@@ -5,6 +5,7 @@ import (
 	"document-parser/internal/config"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/rs/cors"
@@ -41,9 +42,13 @@ func configureCORS() *cors.Cors {
 }
 
 func configureCORSFor(handler http.Handler) http.Handler {
+	domain := os.Getenv("DOMAIN_URL")
+	origin := "http://" + domain
+	sOrigin := "https://" + domain
+
 	ch := cors.New(cors.Options{
 		// # http://mywebsite-domain.com/ is configured in hosts (localhost:80 alias)
-		AllowedOrigins: []string{"http://mywebsite-domain.com/", "http://192.168.1.107:8080", "http://localhost:8080"},
+		AllowedOrigins: []string{origin, sOrigin, "http://localhost:8080"},
 		AllowedMethods: []string{"POST", "GET", "PUT", "DELETE"},
 		// AllowCredentials: true,
 

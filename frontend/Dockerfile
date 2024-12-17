@@ -17,6 +17,9 @@ COPY . ./
 # ARG ENV_ARG=$ENV_ARG
 # RUN echo -e "$ENV_ARG" >> ./.env
 
+ARG API_URL=localhost
+ENV API_URL=${API_URL}
+
 # Строим приложение для продакшен-режима
 RUN npm run build
 

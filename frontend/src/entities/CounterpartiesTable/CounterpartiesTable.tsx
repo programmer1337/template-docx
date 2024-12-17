@@ -18,22 +18,30 @@ export function CounterpartiesTable(props: ICounterpartiesTable) {
 			}
 		});
 
-		fetch('http://192.168.1.107:9090/api/replace', {
+		// eslint-disable-next-line no-console
+		console.log(process.env.REACT_APP_API_URL);
+
+		fetch(`http://${process.env.REACT_APP_API_URL}/api/replace`, {
 			method: 'POST',
 			body: JSON.stringify(body),
 			headers: {
 				'Content-Type': 'application/json',
 			},
 		})
-			.then((resp) => resp.blob())
+			.then((resp) => {
+				if (resp.status === 200) {
+					return resp.blob();
+				}
+			})
 			.then((blob) => {
 				// saveAs(blob, 'all_files.zip');
-
-				// Если не используем FileSaver, можно создать ссылку вручную:
-				const link = document.createElement('a');
-				link.href = URL.createObjectURL(blob);
-				link.download = 'all_files.zip';
-				link.click();
+				if (blob) {
+					// Если не используем FileSaver, можно создать ссылку вручную:
+					const link = document.createElement('a');
+					link.href = URL.createObjectURL(blob);
+					link.download = 'all_files.zip';
+					link.click();
+				}
 			});
 	};
 

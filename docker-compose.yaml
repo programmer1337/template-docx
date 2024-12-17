@@ -1,28 +1,54 @@
 services:
   # nginx:
   #   image: nginx:latest
-  #   container_name: my-nginx
+  #   container_name: nginx
   #   ports:
-  #     - "8080:80"
+  #     - "80:80"
   #   volumes:
   #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
   #     - ./nginx/html:/usr/share/nginx/html:ro
   #   networks:
   #     - nginx-network
 
+  # traefik:
+  #   image: traefik:v3.2
+  #   command:
+  #     - "--api.insecure=true"
+  #     - "--entrypoints.web.address=:80"
+  #     # - "--entrypoints.websecure.address=:443"
+  #   ports:
+  #     - "80:80"
+  #     # - "443:443"
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.myrouter.entrypoints=web"
+  #     - "traefik.http.services.myservice.loadbalancer.server.port=8080" # Направляем на 8080
+  #   networks:
+  #     - trafik-network
+
   frontend:
     container_name: frontend
     build:
       context: ./frontend/
       dockerfile: ./Dockerfile
+      args:
+        API_URL: localhost:9090
+    # labels:
+    #   - "traefik.enable=true"
+    #   - "traefik.http.routers.frontend.rule=Host(`localhost`)"
+    #   - "traefik.http.services.frontend.loadbalancer.server.port=8080"
     ports:
-      - "8080:80"
+      - "80:80"
+    networks:
+      - nginx-network
 
   backend:
     container_name: backend
     build:
       context: ./backend/
       dockerfile: ./cmd/Dockerfile
+    environment:
+      - DOMAIN_URL=production
     ports:
       - "9090:3080"
     networks:
