@@ -66,8 +66,14 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Print("downloadAllFiles")
 	defer downloadAllFiles(w)
 
+	log.Print("processCounteparties")
+	go processCounteparties(counteparties)
+}
+
+func processCounteparties(counteparties Counteparties) {
 	for _, counteparty := range counteparties {
 		replaceMap := docx.PlaceholderMap{
 			"A": counteparty.Code_ou,
@@ -94,7 +100,6 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 			"V": counteparty.Category,
 		}
 
-		// "./templates/type1.docx"
 		var pathToTemplate = "../templates/type" + counteparty.Contract_type + ".docx"
 		var pathToSave = "../replaced/" + counteparty.Inn + ".docx"
 		utils.PlaceholderReplacer(pathToTemplate, pathToSave, replaceMap)
@@ -102,6 +107,7 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 }
 
 func downloadAllFiles(w http.ResponseWriter) {
+	log.Print("[In downloadAllFiles method]")
 	// Путь к папке с файлами
 	dir := "../replaced"
 
