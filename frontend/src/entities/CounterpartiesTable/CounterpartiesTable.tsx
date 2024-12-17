@@ -29,6 +29,7 @@ export function CounterpartiesTable(props: ICounterpartiesTable) {
 				if (resp.status === 200) {
 					return resp.blob();
 				}
+				throw new Error(`Ошибка: ${resp.status}`);
 			})
 			.then((blob) => {
 				// saveAs(blob, 'all_files.zip');

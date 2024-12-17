@@ -17,7 +17,7 @@ type Server struct {
 }
 
 func NewServer(handler http.Handler, logger *log.Logger) *Server {
-	domain := os.Getenv("DOMAIN_URL")
+	domain := os.Getenv("ORIGIN")
 	origins := []string{"http://" + domain, "https://" + domain}
 	logger.Print(origins)
 
@@ -26,9 +26,9 @@ func NewServer(handler http.Handler, logger *log.Logger) *Server {
 			Addr:    ":" + config.DefaultHTTPPort,
 			Handler: configureCORSFor(handler, origins),
 			// Handler:      handler,
-			IdleTimeout:  120 * time.Second,
-			WriteTimeout: 12 * time.Second,
-			ReadTimeout:  12 * time.Second,
+			IdleTimeout:  60 * time.Second,
+			WriteTimeout: 60 * time.Second,
+			ReadTimeout:  60 * time.Second,
 		},
 		logger: logger,
 	}
