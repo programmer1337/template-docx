@@ -123,13 +123,13 @@ func downloadAllFiles(w http.ResponseWriter) {
 	for _, file := range files {
 		if filepath.Ext(file.Name()) == ".docx" {
 			// Открываем файл для чтения
-			filePath := filepath.Join(dir, file.Name())
-			f, err := os.Open(filePath)
-			if err != nil {
-				http.Error(w, "Unable to open file", http.StatusInternalServerError)
-				return
-			}
-			defer f.Close()
+			// filePath := filepath.Join(dir, file.Name())
+			// f, err := os.Open(filePath)
+			// if err != nil {
+			// 	http.Error(w, "Unable to open file", http.StatusInternalServerError)
+			// 	return
+			// }
+			// defer f.Close()
 
 			// Добавляем файл в архив
 			zipFile, err := zipWriter.Create(file.Name())
