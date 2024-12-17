@@ -3,51 +3,51 @@ import classes from './XlsxLoader.cn';
 import { InputFile } from 'src/shared/ui/InputFile/InputFile';
 import { Button } from 'src/shared/ui';
 import { useState } from 'react';
-import { read, utils } from 'xlsx';
+// import { read, utils } from 'xlsx';
 import IXlsxLoader from './XlsxLoader.types';
 
-const readExcel = (setValue: (counterparties: Counterparties) => void, file: File) => {
-	(async () => {
-		const data = await file.arrayBuffer();
-		const workbook = read(data, { type: 'binary' });
+// const readExcel = (setValue: (counterparties: Counterparties) => void, file: File) => {
+// 	(async () => {
+// 		const data = await file.arrayBuffer();
+// 		const workbook = read(data, { type: 'binary' });
 
-		const first_sheet_name = workbook.SheetNames[0];
+// 		const first_sheet_name = workbook.SheetNames[0];
 
-		/* Get worksheet */
-		const worksheet = workbook.Sheets[first_sheet_name];
+// 		/* Get worksheet */
+// 		const worksheet = workbook.Sheets[first_sheet_name];
 
-		const headers = [
-			'code_ou',
-			'inn',
-			'institution_short_name',
-			'institution_full_name',
-			'address',
-			'city',
-			'bank_details',
-			'responsible_person_job_title',
-			'responsible_person_short_name',
-			'responsible_person_full_name',
-			'responsible_person_full_name_genitive',
-			'acting_on',
-			'ikz_2025',
-			'source_funding',
-			'email',
-			'phone_number',
-			'contract_form',
-			'contract_type',
-			'contract_number',
-			'contract_formation_data',
-			'responsible_person_job_title_genetive',
-			'category',
-		];
-		const contragents: Counterparties = utils.sheet_to_json(worksheet, {
-			range: worksheet['!ref'],
-			header: headers,
-			defval: '',
-		});
-		setValue(contragents);
-	})();
-};
+// 		const headers = [
+// 			'code_ou',
+// 			'inn',
+// 			'institution_short_name',
+// 			'institution_full_name',
+// 			'address',
+// 			'city',
+// 			'bank_details',
+// 			'responsible_person_job_title',
+// 			'responsible_person_short_name',
+// 			'responsible_person_full_name',
+// 			'responsible_person_full_name_genitive',
+// 			'acting_on',
+// 			'ikz_2025',
+// 			'source_funding',
+// 			'email',
+// 			'phone_number',
+// 			'contract_form',
+// 			'contract_type',
+// 			'contract_number',
+// 			'contract_formation_data',
+// 			'responsible_person_job_title_genetive',
+// 			'category',
+// 		];
+// 		const contragents: Counterparties = utils.sheet_to_json(worksheet, {
+// 			range: worksheet['!ref'],
+// 			header: headers,
+// 			defval: '',
+// 		});
+// 		setValue(contragents);
+// 	})();
+// };
 
 export function XlsxLoader(props: IXlsxLoader) {
 	const { executor } = props;
@@ -55,9 +55,23 @@ export function XlsxLoader(props: IXlsxLoader) {
 	const [file, setFile] = useState<File | null>(null);
 
 	const handleClick = () => {
-		if (file && executor?.setCounterparties) {
-			readExcel(executor.setCounterparties, file);
-		}
+		// if (file && executor?.setCounterparties) {
+		// 	readExcel(executor.setCounterparties, file);
+		// }
+
+		fetch(`http://${process.env.REACT_APP_API_URL}/api/loadCounterpartiesXlsx`, {
+			method: 'POST',
+			body: file,
+			headers: {
+				// 'Content-Type': 'application/json',
+			},
+		})
+			.then((resp) => resp.json())
+			.then((json) => {
+				if (executor?.setCounterparties) {
+					executor.setCounterparties(json);
+				}
+			});
 	};
 
 	return (

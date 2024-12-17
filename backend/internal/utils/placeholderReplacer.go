@@ -3,11 +3,6 @@ package utils
 import "github.com/lukasjarosch/go-docx"
 
 func PlaceholderReplacer(pathToTemplate string, pathToSave string, replaceMap docx.PlaceholderMap) {
-	// replaceMap := docx.PlaceholderMap{
-	// 	"INN":                   "2301033998",
-	// 	"INSTITUTION_FULL_NAME": "Наименование учебного заведения",
-	// }
-
 	// read and parse the template docx
 	// docx.ChangeOpenCloseDelimiter('$', '$')
 	doc, err := docx.Open(pathToTemplate)
@@ -15,7 +10,6 @@ func PlaceholderReplacer(pathToTemplate string, pathToSave string, replaceMap do
 		panic(err)
 	}
 
-	// replace the keys with values from replaceMap
 	err = doc.ReplaceAll(replaceMap)
 	if err != nil {
 		panic(err)
