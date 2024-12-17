@@ -60,17 +60,16 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 
 	log.Print("Decode")
 	err := json.NewDecoder(r.Body).Decode(&counteparties)
+	log.Print("after error")
 	if err != nil {
 		log.Print(err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	log.Print("after condition")
 
-	log.Print("downloadAllFiles")
-	defer downloadAllFiles(w)
-
-	log.Print("processCounteparties")
 	go processCounteparties(counteparties)
+	downloadAllFiles(w)
 }
 
 func processCounteparties(counteparties Counteparties) {
