@@ -1,4 +1,4 @@
-interface IEntitiesExample {
+export default interface CounterpartiesTable {
 	data: {
 		counterparties: Counterparties | null;
 	};
@@ -7,4 +7,11 @@ interface IEntitiesExample {
 	};
 }
 
-export default IEntitiesExample;
+export interface ICounterparty {
+	data: {
+		counterparty: Counterparty;
+	};
+	cn?: {
+		margin?: string;
+	};
+}

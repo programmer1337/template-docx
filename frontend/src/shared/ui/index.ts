@@ -6,3 +6,4 @@ export * from './grid/Col/Col';
 // # ИМПОРТ UI КОМПОНЕНТОВ # //
 export * from './Button/Button';
 export * from './InputFile/InputFile';
+export * from './SvgSprite/SvgSprite';

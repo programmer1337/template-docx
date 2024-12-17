@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	DefaultHTTPPort = "3080"
+	DefaultHTTPPort = "8000"
 
 	EnvLocal = "local"
 	Prod     = "prod"

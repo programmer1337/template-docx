@@ -17,8 +17,8 @@ type Server struct {
 }
 
 func NewServer(handler http.Handler, logger *log.Logger) *Server {
-	domain := os.Getenv("DOMAIN_URL")
-	origins := []string{"http://" + domain, "https://" + domain}
+	domain := os.Getenv("ORIGIN")
+	origins := []string{"http://" + domain, "https://" + domain, "http://localhost:8080"}
 	logger.Print(origins)
 
 	return &Server{
@@ -26,30 +26,30 @@ func NewServer(handler http.Handler, logger *log.Logger) *Server {
 			Addr:    ":" + config.DefaultHTTPPort,
 			Handler: configureCORSFor(handler, origins),
 			// Handler:      handler,
-			IdleTimeout:  120 * time.Second,
-			WriteTimeout: 12 * time.Second,
-			ReadTimeout:  12 * time.Second,
+			IdleTimeout:  1200 * time.Second,
+			WriteTimeout: 1200 * time.Second,
+			ReadTimeout:  1200 * time.Second,
 		},
 		logger: logger,
 	}
 }
 
-func configureCORS() *cors.Cors {
-	return cors.New(cors.Options{
-		// # http://mywebsite-domain.com/ is configured in hosts (localhost:80 alias)
-		AllowedOrigins: []string{"http://mywebsite-domain.com/"},
-		AllowedMethods: []string{"POST", "GET", "PUT", "DELETE"},
-		// AllowCredentials: true,
+// func configureCORS() *cors.Cors {
+// 	return cors.New(cors.Options{
+// 		// # http://mywebsite-domain.com/ is configured in hosts (localhost:80 alias)
+// 		AllowedOrigins: []string{"http://mywebsite-domain.com/"},
+// 		AllowedMethods: []string{"POST", "GET", "PUT", "DELETE", "OPTIONS"},
+// 		// AllowCredentials: true,
 
-		Debug: true,
-	})
-}
+// 		Debug: true,
+// 	})
+// }
 
 func configureCORSFor(handler http.Handler, origins []string) http.Handler {
 	ch := cors.New(cors.Options{
 		// # http://mywebsite-domain.com/ is configured in hosts (localhost:80 alias)
 		AllowedOrigins: origins,
-		AllowedMethods: []string{"POST", "GET", "PUT", "DELETE"},
+		AllowedMethods: []string{"POST", "GET", "PUT", "DELETE", "OPTIONS"},
 		// AllowCredentials: true,
 
 		Debug: true,
