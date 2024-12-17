@@ -54,17 +54,19 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
-		log.Print("Expected Content-Type: application/json")
 		http.Error(w, "Expected Content-Type: application/json", http.StatusUnsupportedMediaType)
 		return
 	}
 
+	log.Print("Decode")
 	err := json.NewDecoder(r.Body).Decode(&counteparties)
 	if err != nil {
-		log.Println(err)
+		log.Print(err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	defer downloadAllFiles(w)
 
 	for _, counteparty := range counteparties {
 		replaceMap := docx.PlaceholderMap{
@@ -97,9 +99,6 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 		var pathToSave = "../replaced/" + counteparty.Inn + ".docx"
 		utils.PlaceholderReplacer(pathToTemplate, pathToSave, replaceMap)
 	}
-
-	// downloadMultipleFilesHandler(w, r)
-	downloadAllFiles(w)
 }
 
 func downloadAllFiles(w http.ResponseWriter) {

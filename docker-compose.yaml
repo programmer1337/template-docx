@@ -51,8 +51,8 @@ services:
       DOMAIN_URL: localhost
     ports:
       - "9090:3080"
-    networks:
-      - backend-network
+    # networks:
+    #   - backend-network
 
 networks:
   backend-network:
