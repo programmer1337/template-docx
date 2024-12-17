@@ -48,10 +48,13 @@ func HandleReplace(serveMux *mux.Router, log *log.Logger) {
 }
 
 func Replace(w http.ResponseWriter, r *http.Request) {
+	log.Print("In replace method")
+
 	var counteparties Counteparties
 
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
+		log.Print("Expected Content-Type: application/json")
 		http.Error(w, "Expected Content-Type: application/json", http.StatusUnsupportedMediaType)
 		return
 	}
@@ -110,16 +113,53 @@ func downloadAllFiles(w http.ResponseWriter) {
 
 	// Создаем новый zip.Writer
 	zipWriter := zip.NewWriter(w)
+	log.Print("[In downloadAllFiles method]")
 	defer zipWriter.Close()
+	log.Print("[In downloadAllFiles method]: after defer")
 
 	// Получаем список всех файлов в директории
 	files, err := os.ReadDir(dir)
 	if err != nil {
+		log.Print("[In downloadAllFiles method]: ReadDir error")
+
 		http.Error(w, "Unable to read directory", http.StatusInternalServerError)
 		return
 	}
 
 	// Перебираем все файлы и добавляем их в архив
+	// go processFiles(w, dir, zipWriter, files)
+	for _, file := range files {
+		if filepath.Ext(file.Name()) == ".docx" {
+			// Открываем файл для чтения
+			filePath := filepath.Join(dir, file.Name())
+			f, err := os.Open(filePath)
+			if err != nil {
+				log.Print("[In downloadAllFiles method]: Unable to open file")
+				http.Error(w, "Unable to open file", http.StatusInternalServerError)
+				return
+			}
+			defer f.Close()
+
+			// Добавляем файл в архив
+			zipFile, err := zipWriter.Create(file.Name())
+			if err != nil {
+				log.Print("[In downloadAllFiles method]: Unable to create zip entry")
+				http.Error(w, "Unable to create zip entry", http.StatusInternalServerError)
+				return
+			}
+
+			// Копируем содержимое файла в архив
+			_, err = io.Copy(zipFile, f)
+			if err != nil {
+				log.Print("[In downloadAllFiles method]: Error copying file data")
+				http.Error(w, "Error copying file data", http.StatusInternalServerError)
+				return
+			}
+		}
+	}
+}
+
+func processFiles(w http.ResponseWriter, dir string, zipWriter *zip.Writer, files []os.DirEntry) {
 	for _, file := range files {
 		if filepath.Ext(file.Name()) == ".docx" {
 			// Открываем файл для чтения
@@ -146,4 +186,25 @@ func downloadAllFiles(w http.ResponseWriter) {
 			}
 		}
 	}
+	// if filepath.Ext(file.Name()) == ".docx" {
+	// 	filePath := filepath.Join(dir, file.Name())
+	// 	f, err := os.Open(filePath)
+	// 	if err != nil {
+	// 		log.Println("Unable to open file:", err)
+	// 		return
+	// 	}
+	// 	defer f.Close()
+
+	// 	zipFile, err := zipWriter.Create(file.Name())
+	// 	if err != nil {
+	// 		log.Println("Unable to create zip entry:", err)
+	// 		return
+	// 	}
+
+	// 	_, err = io.Copy(zipFile, f)
+	// 	if err != nil {
+	// 		log.Println("Error copying file data:", err)
+	// 		return
+	// 	}
+	// }
 }
