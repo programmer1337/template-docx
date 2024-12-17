@@ -6,24 +6,25 @@
 	.input-file {
 		display: flex;
 		align-items: center;
-		padding: 4px;
-		column-gap: 8px;
-		min-width: 120px;
 
-		border: 4px solid var(--cornflower);
-		border-radius: var(--br8);
+		min-width: 120px;
+		padding: 4px;
 
 		cursor: pointer;
+
+		border: 4px solid var(--medium-persian-blue);
+		border-radius: var(--br8);
+		column-gap: 8px;
 
 		&__field {
 			display: none;
 		}
 
 		&__fake-button {
-			background-color: var(--cornflower);
-			border-radius: var(--br4);
-
 			padding: 8px;
+
+			border-radius: var(--br4);
+			background-color: var(--medium-persian-blue);
 		}
 	}
 }

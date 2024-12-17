@@ -13,7 +13,7 @@ FROM gcr.io/distroless/base
 # Копируем папку с шаблонами
 COPY --from=build /app/myapp /myapp
 COPY --from=build /app/templates /templates
-COPY --from=build /app/replaced /replaced
+# COPY --from=build /app/replaced /replaced
 
-EXPOSE 3080
+EXPOSE 8000
 CMD ["/myapp"]

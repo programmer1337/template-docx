@@ -4,7 +4,7 @@
 	"version": "0.1.0",
 	"private": true,
 	"scripts": {
-		"dev": "REACT_APP_API_URL=$API_URL react-scripts start",
+		"dev": "react-scripts start",
 		"build": "REACT_APP_API_URL=$API_URL react-scripts build",
 		"lint": "stylelint \"src/**/*.scss\" && eslint \"src/**/*.{tsx,ts}\"",
 		"lint:fix": "stylelint \"src/**/*.scss\" --fix && eslint \"src/**/*.{tsx,ts}\" --fix"

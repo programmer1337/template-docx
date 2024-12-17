@@ -3,7 +3,6 @@ package handler
 import (
 	"archive/zip"
 	"document-parser/internal/utils"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -12,10 +11,11 @@ import (
 	"path/filepath"
 
 	"github.com/gorilla/mux"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/lukasjarosch/go-docx"
 )
 
-type Conteragent struct {
+type Counterparty struct {
 	Code_ou                               string `json:"code_ou"`
 	Inn                                   string `json:"inn"`
 	Institution_short_name                string `json:"institution_short_name"`
@@ -40,7 +40,9 @@ type Conteragent struct {
 	Category                              string `json:"category"`
 }
 
-type Conteragents []*Conteragent
+type Counterparties []*Counterparty
+
+type KeyCounterparties struct{}
 
 func HandleReplace(serveMux *mux.Router, log *log.Logger) {
 	postRouter := serveMux.Methods(http.MethodPost).Subrouter()
@@ -48,22 +50,62 @@ func HandleReplace(serveMux *mux.Router, log *log.Logger) {
 }
 
 func Replace(w http.ResponseWriter, r *http.Request) {
-	var conteragents Conteragents
-
 	contentType := r.Header.Get("Content-Type")
+
 	if contentType != "application/json" {
 		http.Error(w, "Expected Content-Type: application/json", http.StatusUnsupportedMediaType)
 		return
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&conteragents)
+	// ctx, cancel := context.WithTimeout(r.Context(), 60*time.Second)
+	// defer cancel()
+
+	counterparties := Counterparties{}
+
+	log.Print("ReadAll")
+	body, err := io.ReadAll(r.Body)
+	r.Body.Close()
+
+	// decoder := json.NewDecoder(r.Body)
+	// err := decoder.Decode(&counterparties)
+
 	if err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		log.Printf("Error reading request body: %v", err)
+		http.Error(w, "Unable to read request body", http.StatusInternalServerError)
 		return
 	}
 
-	for _, conteragent := range conteragents {
+	// err = json.Unmarshal(body, &counterparties)
+	// if err != nil {
+	// 	fmt.Println(w, "can't unmarshal: ", err.Error())
+	// }
+
+	// if err != nil {
+	// 	if ctx.Err() == context.DeadlineExceeded {
+	// 		log.Println("Request body read timed out")
+	// 	}
+	// 	log.Printf("Error reading request body: %v", err)
+	// 	http.Error(w, "Unable to read request body", http.StatusInternalServerError)
+	// 	return
+	// }
+
+	log.Print("jsoniter")
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	err = json.Unmarshal(body, &counterparties)
+
+	fmt.Printf("Received body: %v", counterparties)
+
+	log.Print("RemoveAll")
+	err = os.RemoveAll("../replaced/")
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	log.Print("counterparties")
+	for _, conteragent := range counterparties {
+		// log.Println(pos, conteragent)
+
 		replaceMap := docx.PlaceholderMap{
 			"A": conteragent.Code_ou,
 			"B": conteragent.Inn,
@@ -94,8 +136,6 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 		var pathToSave = "../replaced/" + conteragent.Inn + ".docx"
 		utils.PlaceholderReplacer(pathToTemplate, pathToSave, replaceMap)
 	}
-
-	// downloadMultipleFilesHandler(w, r)
 	downloadAllFiles(w)
 }
 

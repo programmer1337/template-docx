@@ -1,1 +1,1 @@
-export * from './EntitiesExample/EntitiesExample';
+export * from './CounterpartiesTable/CounterpartiesTable';
