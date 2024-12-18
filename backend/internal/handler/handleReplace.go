@@ -3,7 +3,6 @@ package handler
 import (
 	"archive/zip"
 	"document-parser/internal/utils"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -12,6 +11,7 @@ import (
 	"path/filepath"
 
 	"github.com/gorilla/mux"
+	jsoniter "github.com/json-iterator/go"
 	"github.com/lukasjarosch/go-docx"
 )
 
@@ -56,7 +56,17 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&conteragents)
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Printf("Error reading request body: %v", err)
+		http.Error(w, "Unable to read request body", http.StatusInternalServerError)
+		return
+	}
+
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	err = json.Unmarshal(body, &conteragents)
+
+	// err := json.NewDecoder(r.Body).Decode(&conteragents)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
