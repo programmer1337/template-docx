@@ -39,8 +39,8 @@ services:
     #   - "traefik.http.services.frontend.loadbalancer.server.port=8080"
     ports:
       - "80:80"
-    # networks:
-    #   - nginx-network
+    networks:
+      - backend-network
 
   backend:
     container_name: backend
@@ -51,8 +51,8 @@ services:
       DOMAIN_URL: localhost
     ports:
       - "9090:3080"
-    # networks:
-    #   - backend-network
+    networks:
+      - backend-network
 
 networks:
   backend-network:
