@@ -96,19 +96,6 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 		var pathToSave = "../replaced/" + conteragent.Inn + ".docx"
 		utils.PlaceholderReplacer(pathToTemplate, pathToSave, replaceMap)
 	}
-
-	// log.Printf("Received data: %+v", conteragents)
-
-	// replaceMap := docx.PlaceholderMap{
-	// 	"A": "test",
-	// 	"B": "2301033998",
-	// 	"D": "Наименование учебного заведения",
-	// }
-
-	// utils.PlaceholderReplacer("./templates/type1.docx", replaceMap)
-
-	// json.NewEncoder(w).Encode(conteragents)
-	// downloadMultipleFilesHandler(w, r)
 	downloadAllFiles(w)
 }
 
