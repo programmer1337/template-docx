@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/gorilla/mux"
 	"github.com/lukasjarosch/go-docx"
@@ -55,178 +56,124 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Print("Decode")
+	log.Print("Decoding body")
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		log.Print("Error reading body:", err)
+		log.Printf("Error reading body: %v", err)
 		http.Error(w, "Unable to read request body", http.StatusInternalServerError)
 		return
 	}
 
-	log.Printf("Received body: %s", body)
+	log.Printf("Received body (first 500 chars): %s", string(body[:min(500, len(body))]))
 	r.Body = io.NopCloser(bytes.NewBuffer(body))
 
 	var counteparties Counteparties
 	err = json.NewDecoder(r.Body).Decode(&counteparties)
-	r.Body.Close()
-	log.Print("after error")
 	if err != nil {
-		log.Print(err)
+		log.Printf("Error decoding body: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	log.Print("after condition")
+	log.Print("Body decoded successfully")
 
-	done := make(chan struct{})
+	var wg sync.WaitGroup
+	wg.Add(len(counteparties))
 
-	go func() {
-		processCounteparties(counteparties)
-		done <- struct{}{}
-	}()
+	for _, counteparty := range counteparties {
+		go func(counteparty *Counteparty) {
+			defer wg.Done()
 
-	<-done
+			replaceMap := docx.PlaceholderMap{
+				"A": counteparty.Code_ou,
+				"B": counteparty.Inn,
+				"C": counteparty.Institution_short_name,
+				"D": counteparty.Institution_full_name,
+				"E": counteparty.Address,
+				"F": counteparty.City,
+				"G": counteparty.Bank_details,
+				"H": counteparty.Responsible_person_job_title,
+				"I": counteparty.Responsible_person_short_name,
+				"J": counteparty.Responsible_person_full_name,
+				"K": counteparty.Responsible_person_full_name_genitive,
+				"L": counteparty.Acting_on,
+				"M": counteparty.Ikz_2025,
+				"N": counteparty.Source_funding,
+				"O": counteparty.Email,
+				"P": counteparty.Phone_number,
+				"Q": counteparty.Contract_form,
+				"R": counteparty.Contract_type,
+				"S": counteparty.Contract_number,
+				"T": counteparty.Contract_formation_data,
+				"U": counteparty.Responsible_person_job_title_genetive,
+				"V": counteparty.Category,
+			}
 
-	// После завершения обработок, вызываем функцию для скачивания файлов
+			var pathToTemplate = "../templates/type" + counteparty.Contract_type + ".docx"
+			var pathToSave = "../replaced/" + counteparty.Inn + ".docx"
+			utils.PlaceholderReplacer(pathToTemplate, pathToSave, replaceMap)
+		}(counteparty)
+	}
+
+	wg.Wait()
+
 	downloadAllFiles(w)
 }
 
-func processCounteparties(counteparties Counteparties) {
-	for _, counteparty := range counteparties {
-		replaceMap := docx.PlaceholderMap{
-			"A": counteparty.Code_ou,
-			"B": counteparty.Inn,
-			"C": counteparty.Institution_short_name,
-			"D": counteparty.Institution_full_name,
-			"E": counteparty.Address,
-			"F": counteparty.City,
-			"G": counteparty.Bank_details,
-			"H": counteparty.Responsible_person_job_title,
-			"I": counteparty.Responsible_person_short_name,
-			"J": counteparty.Responsible_person_full_name,
-			"K": counteparty.Responsible_person_full_name_genitive,
-			"L": counteparty.Acting_on,
-			"M": counteparty.Ikz_2025,
-			"N": counteparty.Source_funding,
-			"O": counteparty.Email,
-			"P": counteparty.Phone_number,
-			"Q": counteparty.Contract_form,
-			"R": counteparty.Contract_type,
-			"S": counteparty.Contract_number,
-			"T": counteparty.Contract_formation_data,
-			"U": counteparty.Responsible_person_job_title_genetive,
-			"V": counteparty.Category,
-		}
-
-		var pathToTemplate = "../templates/type" + counteparty.Contract_type + ".docx"
-		var pathToSave = "../replaced/" + counteparty.Inn + ".docx"
-		utils.PlaceholderReplacer(pathToTemplate, pathToSave, replaceMap)
-	}
-}
-
 func downloadAllFiles(w http.ResponseWriter) {
-	log.Print("[In downloadAllFiles method]")
-	// Путь к папке с файлами
-	dir := "../replaced"
+	log.Print("In downloadAllFiles method")
 
-	// Создаем новый архив
+	dir := "../replaced"
 	zipFileName := "all_files.zip"
 	w.Header().Set("Content-Type", "application/zip")
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", zipFileName))
 
-	// Создаем новый zip.Writer
 	zipWriter := zip.NewWriter(w)
-	log.Print("[In downloadAllFiles method]")
 	defer zipWriter.Close()
-	log.Print("[In downloadAllFiles method]: after defer")
 
-	// Получаем список всех файлов в директории
 	files, err := os.ReadDir(dir)
 	if err != nil {
-		log.Print("[In downloadAllFiles method]: ReadDir error")
-
+		log.Print("Error reading directory:", err)
 		http.Error(w, "Unable to read directory", http.StatusInternalServerError)
 		return
 	}
 
-	// Перебираем все файлы и добавляем их в архив
-	// go processFiles(w, dir, zipWriter, files)
+	// Используем sync.WaitGroup для параллельной обработки файлов
+	var wg sync.WaitGroup
 	for _, file := range files {
 		if filepath.Ext(file.Name()) == ".docx" {
-			// Открываем файл для чтения
-			filePath := filepath.Join(dir, file.Name())
-			f, err := os.Open(filePath)
-			if err != nil {
-				log.Print("[In downloadAllFiles method]: Unable to open file")
-				http.Error(w, "Unable to open file", http.StatusInternalServerError)
-				return
-			}
-			defer f.Close()
+			wg.Add(1) // Увеличиваем счетчик ожидания для каждого файла
 
-			// Добавляем файл в архив
-			zipFile, err := zipWriter.Create(file.Name())
-			if err != nil {
-				log.Print("[In downloadAllFiles method]: Unable to create zip entry")
-				http.Error(w, "Unable to create zip entry", http.StatusInternalServerError)
-				return
-			}
+			go func(file os.DirEntry) {
+				defer wg.Done() // Уменьшаем счетчик ожидания по завершении горутины
 
-			// Копируем содержимое файла в архив
-			_, err = io.Copy(zipFile, f)
-			if err != nil {
-				log.Print("[In downloadAllFiles method]: Error copying file data")
-				http.Error(w, "Error copying file data", http.StatusInternalServerError)
-				return
-			}
+				filePath := filepath.Join(dir, file.Name())
+				f, err := os.Open(filePath)
+				if err != nil {
+					log.Printf("Unable to open file %s: %v", file.Name(), err)
+					return
+				}
+				defer f.Close()
+
+				zipFile, err := zipWriter.Create(file.Name())
+				if err != nil {
+					log.Printf("Unable to create zip entry for %s: %v", file.Name(), err)
+					return
+				}
+
+				_, err = io.Copy(zipFile, f)
+				if err != nil {
+					log.Printf("Error copying file %s data: %v", file.Name(), err)
+				}
+			}(file)
 		}
 	}
+
+	wg.Wait()
 }
 
-func processFiles(w http.ResponseWriter, dir string, zipWriter *zip.Writer, files []os.DirEntry) {
-	for _, file := range files {
-		if filepath.Ext(file.Name()) == ".docx" {
-			// Открываем файл для чтения
-			filePath := filepath.Join(dir, file.Name())
-			f, err := os.Open(filePath)
-			if err != nil {
-				http.Error(w, "Unable to open file", http.StatusInternalServerError)
-				return
-			}
-			defer f.Close()
-
-			// Добавляем файл в архив
-			zipFile, err := zipWriter.Create(file.Name())
-			if err != nil {
-				http.Error(w, "Unable to create zip entry", http.StatusInternalServerError)
-				return
-			}
-
-			// Копируем содержимое файла в архив
-			_, err = io.Copy(zipFile, f)
-			if err != nil {
-				http.Error(w, "Error copying file data", http.StatusInternalServerError)
-				return
-			}
-		}
+func min(a, b int) int {
+	if a < b {
+		return a
 	}
-	// if filepath.Ext(file.Name()) == ".docx" {
-	// 	filePath := filepath.Join(dir, file.Name())
-	// 	f, err := os.Open(filePath)
-	// 	if err != nil {
-	// 		log.Println("Unable to open file:", err)
-	// 		return
-	// 	}
-	// 	defer f.Close()
-
-	// 	zipFile, err := zipWriter.Create(file.Name())
-	// 	if err != nil {
-	// 		log.Println("Unable to create zip entry:", err)
-	// 		return
-	// 	}
-
-	// 	_, err = io.Copy(zipFile, f)
-	// 	if err != nil {
-	// 		log.Println("Error copying file data:", err)
-	// 		return
-	// 	}
-	// }
+	return b
 }
