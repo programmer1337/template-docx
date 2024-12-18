@@ -61,7 +61,8 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 
 	log.Print("Decode")
 	buf := new(bytes.Buffer)
-	_, err := buf.ReadFrom(r.Body)
+	n, err := buf.ReadFrom(r.Body)
+	log.Print(n)
 	r.Body.Close()
 	if err != nil {
 		log.Print(err)
@@ -71,8 +72,7 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 	// err := json.NewDecoder(r.Body).Decode(&counteparties)
 	// r.Body.Close()
 
-	decoder := json.NewDecoder(buf)
-	err = decoder.Decode(&counteparties)
+	err = json.NewDecoder(buf).Decode(&counteparties)
 	log.Print("after error")
 	if err != nil {
 		log.Print(err)
