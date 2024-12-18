@@ -128,7 +128,7 @@ func downloadAllFiles(w http.ResponseWriter) {
 	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", zipFileName))
 
 	zipWriter := zip.NewWriter(w)
-	// defer zipWriter.Close()
+	defer zipWriter.Close()
 
 	files, err := os.ReadDir(dir)
 	if err != nil {
@@ -168,7 +168,7 @@ func downloadAllFiles(w http.ResponseWriter) {
 		}
 	}
 
-	wg.Wait()
+	wg.Wait() // Ждем завершения всех горутин
 }
 
 func min(a, b int) int {
