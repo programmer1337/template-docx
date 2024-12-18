@@ -2,6 +2,7 @@ package handler
 
 import (
 	"archive/zip"
+	"bytes"
 	"document-parser/internal/utils"
 	"encoding/json"
 	"fmt"
@@ -59,8 +60,19 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Print("Decode")
-	err := json.NewDecoder(r.Body).Decode(&counteparties)
+	buf := new(bytes.Buffer)
+	_, err := buf.ReadFrom(r.Body)
 	r.Body.Close()
+	if err != nil {
+		log.Print(err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	// err := json.NewDecoder(r.Body).Decode(&counteparties)
+	// r.Body.Close()
+
+	decoder := json.NewDecoder(buf)
+	err = decoder.Decode(&counteparties)
 	log.Print("after error")
 	if err != nil {
 		log.Print(err)
