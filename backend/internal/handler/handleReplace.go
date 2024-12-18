@@ -2,7 +2,6 @@ package handler
 
 import (
 	"archive/zip"
-	"bytes"
 	"document-parser/internal/utils"
 	"encoding/json"
 	"fmt"
@@ -60,19 +59,8 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Print("Decode")
-	buf := new(bytes.Buffer)
-	n, err := buf.ReadFrom(r.Body)
-	log.Print(n)
+	err := json.NewDecoder(r.Body).Decode(&counteparties)
 	r.Body.Close()
-	if err != nil {
-		log.Print(err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-	}
-
-	// err := json.NewDecoder(r.Body).Decode(&counteparties)
-	// r.Body.Close()
-
-	err = json.NewDecoder(buf).Decode(&counteparties)
 	log.Print("after error")
 	if err != nil {
 		log.Print(err)
@@ -81,7 +69,18 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Print("after condition")
 
-	go processCounteparties(counteparties)
+	// Создаем канал для асинхронной обработки
+	done := make(chan struct{})
+
+	go func() {
+		processCounteparties(counteparties)
+		done <- struct{}{} // signal when done
+	}()
+
+	// Ожидаем завершения обработки данных
+	<-done
+
+	// После завершения обработок, вызываем функцию для скачивания файлов
 	downloadAllFiles(w)
 }
 
