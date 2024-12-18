@@ -2,6 +2,7 @@ package handler
 
 import (
 	"archive/zip"
+	"bytes"
 	"document-parser/internal/utils"
 	"encoding/json"
 	"fmt"
@@ -48,8 +49,6 @@ func HandleReplace(serveMux *mux.Router, log *log.Logger) {
 }
 
 func Replace(w http.ResponseWriter, r *http.Request) {
-	var counteparties Counteparties
-
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
 		http.Error(w, "Expected Content-Type: application/json", http.StatusUnsupportedMediaType)
@@ -57,8 +56,18 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Print("Decode")
-	log.Print(r.Body)
-	err := json.NewDecoder(r.Body).Decode(&counteparties)
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Print("Error reading body:", err)
+		http.Error(w, "Unable to read request body", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("Received body: %s", body)
+	r.Body = io.NopCloser(bytes.NewBuffer(body))
+
+	var counteparties Counteparties
+	err = json.NewDecoder(r.Body).Decode(&counteparties)
 	r.Body.Close()
 	log.Print("after error")
 	if err != nil {
