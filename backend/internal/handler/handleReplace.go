@@ -48,8 +48,6 @@ func HandleReplace(serveMux *mux.Router, log *log.Logger) {
 }
 
 func Replace(w http.ResponseWriter, r *http.Request) {
-	log.Print("In replace method")
-
 	var counteparties Counteparties
 
 	contentType := r.Header.Get("Content-Type")
@@ -59,6 +57,7 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Print("Decode")
+	log.Print(r.Body)
 	err := json.NewDecoder(r.Body).Decode(&counteparties)
 	r.Body.Close()
 	log.Print("after error")
@@ -69,15 +68,13 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Print("after condition")
 
-	// Создаем канал для асинхронной обработки
 	done := make(chan struct{})
 
 	go func() {
 		processCounteparties(counteparties)
-		done <- struct{}{} // signal when done
+		done <- struct{}{}
 	}()
 
-	// Ожидаем завершения обработки данных
 	<-done
 
 	// После завершения обработок, вызываем функцию для скачивания файлов
