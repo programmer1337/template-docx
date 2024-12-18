@@ -73,6 +73,12 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = os.RemoveAll("../replaced/")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	for _, conteragent := range conteragents {
 		// log.Println(pos, conteragent)
 
