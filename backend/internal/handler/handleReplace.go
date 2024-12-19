@@ -56,6 +56,7 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Print("read body")
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("Error reading request body: %v", err)
