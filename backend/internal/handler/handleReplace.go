@@ -56,12 +56,16 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Print("ReadAll")
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("Error reading request body: %v", err)
 		http.Error(w, "Unable to read request body", http.StatusInternalServerError)
 		return
 	}
+	defer r.Body.Close()
+
+	fmt.Printf("Received body: %s\n", string(body))
 
 	log.Print("jsoniter")
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
