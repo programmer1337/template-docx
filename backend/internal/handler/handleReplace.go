@@ -75,7 +75,7 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 
 	err = os.RemoveAll("../replaced/")
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 

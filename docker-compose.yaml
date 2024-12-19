@@ -32,7 +32,7 @@ services:
       context: ./frontend/
       dockerfile: ./Dockerfile
       args:
-        API_URL: localhost:9090
+        API_URL: backend:9090
     # labels:
     #   - "traefik.enable=true"
     #   - "traefik.http.routers.frontend.rule=Host(`localhost`)"
