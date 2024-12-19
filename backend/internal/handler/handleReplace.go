@@ -56,7 +56,6 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Print("read body")
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("Error reading request body: %v", err)
@@ -64,6 +63,7 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Print("jsoniter")
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err = json.Unmarshal(body, &conteragents)
 
@@ -74,12 +74,14 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Print("RemoveAll")
 	err = os.RemoveAll("../replaced/")
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
+	log.Print("conteragents")
 	for _, conteragent := range conteragents {
 		// log.Println(pos, conteragent)
 
