@@ -48,7 +48,7 @@ func HandleReplace(serveMux *mux.Router, log *log.Logger) {
 }
 
 func Replace(w http.ResponseWriter, r *http.Request) {
-	var conteragents Conteragents
+	r.Body = http.MaxBytesReader(w, r.Body, 10<<20) // Ограничение 10 MB
 
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
@@ -68,6 +68,7 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("Received body: %s\n", string(body))
 
 	log.Print("jsoniter")
+	var conteragents Conteragents
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err = json.Unmarshal(body, &conteragents)
 
