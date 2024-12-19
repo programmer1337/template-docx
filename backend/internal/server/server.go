@@ -17,7 +17,7 @@ type Server struct {
 }
 
 func NewServer(handler http.Handler, logger *log.Logger) *Server {
-	domain := os.Getenv("DOMAIN_URL")
+	domain := os.Getenv("ORIGIN")
 	origins := []string{"http://" + domain, "https://" + domain}
 	logger.Print(origins)
 

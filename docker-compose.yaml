@@ -1,14 +1,14 @@
 services:
-  # nginx:
-  #   image: nginx:latest
-  #   container_name: nginx
-  #   ports:
-  #     - "80:80"
-  #   volumes:
-  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-  #     - ./nginx/html:/usr/share/nginx/html:ro
-  #   networks:
-  #     - nginx-network
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/html:/usr/share/nginx/html:ro
+    networks:
+      - app-network
 
   # traefik:
   #   image: traefik:v3.2
@@ -32,15 +32,15 @@ services:
       context: ./frontend/
       dockerfile: ./Dockerfile
       args:
-        API_URL: backend:9090
+        API_URL: localhost:9090
     # labels:
     #   - "traefik.enable=true"
     #   - "traefik.http.routers.frontend.rule=Host(`localhost`)"
     #   - "traefik.http.services.frontend.loadbalancer.server.port=8080"
-    ports:
-      - "80:80"
+    # ports:
+    #   - "80:80"
     networks:
-      - backend-network
+      - app-network
 
   backend:
     container_name: backend
@@ -49,13 +49,12 @@ services:
       dockerfile: ./cmd/Dockerfile
     environment:
       DOMAIN_URL: localhost
-    ports:
-      - "9090:3080"
+      ORIGIN: webontology.ru
+    # ports:
+    #   - "9090:3080"
     networks:
-      - backend-network
+      - app-network
 
 networks:
-  backend-network:
-    driver: bridge
-  nginx-network:
+  app-network:
     driver: bridge
