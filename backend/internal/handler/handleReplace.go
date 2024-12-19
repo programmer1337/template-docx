@@ -50,8 +50,6 @@ func HandleReplace(serveMux *mux.Router, log *log.Logger) {
 }
 
 func Replace(w http.ResponseWriter, r *http.Request) {
-	r.Body = http.MaxBytesReader(w, r.Body, 10<<20) // Ограничение 10 MB
-
 	contentType := r.Header.Get("Content-Type")
 	if contentType != "application/json" {
 		http.Error(w, "Expected Content-Type: application/json", http.StatusUnsupportedMediaType)

@@ -32,13 +32,13 @@ services:
       context: ./frontend/
       dockerfile: ./Dockerfile
       args:
-        API_URL: webontology.ru:9090
+        API_URL: webontology.ru:3080
     # labels:
     #   - "traefik.enable=true"
     #   - "traefik.http.routers.frontend.rule=Host(`localhost`)"
     #   - "traefik.http.services.frontend.loadbalancer.server.port=8080"
-    ports:
-      - "80:80"
+    # ports:
+    #   - "80:80"
     networks:
       - app-network
 
@@ -50,8 +50,8 @@ services:
     environment:
       DOMAIN_URL: localhost
       ORIGIN: webontology.ru
-    ports:
-      - "9090:3080"
+    # ports:
+    #   - "9090:3080"
     networks:
       - app-network
 
