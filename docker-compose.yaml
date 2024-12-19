@@ -10,22 +10,6 @@ services:
   #   networks:
   #     - app-network
 
-  # traefik:
-  #   image: traefik:v3.2
-  #   command:
-  #     - "--api.insecure=true"
-  #     - "--entrypoints.web.address=:80"
-  #     # - "--entrypoints.websecure.address=:443"
-  #   ports:
-  #     - "80:80"
-  #     # - "443:443"
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.http.routers.myrouter.entrypoints=web"
-  #     - "traefik.http.services.myservice.loadbalancer.server.port=8080" # Направляем на 8080
-  #   networks:
-  #     - trafik-network
-
   frontend:
     container_name: frontend
     build:
@@ -33,12 +17,8 @@ services:
       dockerfile: ./Dockerfile
       args:
         API_URL: webontology.ru:3080
-    # labels:
-    #   - "traefik.enable=true"
-    #   - "traefik.http.routers.frontend.rule=Host(`localhost`)"
-    #   - "traefik.http.services.frontend.loadbalancer.server.port=8080"
-    # ports:
-    #   - "80:80"
+    ports:
+      - "80:80"
     networks:
       - app-network
 
@@ -50,8 +30,8 @@ services:
     environment:
       DOMAIN_URL: localhost
       ORIGIN: webontology.ru
-    # ports:
-    #   - "9090:3080"
+    ports:
+      - "9090:3080"
     networks:
       - app-network
 
