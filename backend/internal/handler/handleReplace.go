@@ -59,10 +59,7 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 	log.Print("ReadAll")
 	body, err := io.ReadAll(r.Body)
 	r.Body.Close()
-	if len(body) == 0 {
-		http.Error(w, "Empty request body", http.StatusBadRequest)
-		return
-	}
+
 	if err != nil {
 		log.Printf("Error reading request body: %v", err)
 		http.Error(w, "Unable to read request body", http.StatusInternalServerError)
