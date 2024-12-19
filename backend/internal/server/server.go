@@ -27,7 +27,7 @@ func NewServer(handler http.Handler, logger *log.Logger) *Server {
 			Handler: configureCORSFor(handler, origins),
 			// Handler:      handler,
 			IdleTimeout:  360 * time.Second,
-			WriteTimeout: 1 * time.Second,
+			WriteTimeout: 10 * time.Second,
 			ReadTimeout:  10 * time.Second,
 		},
 		logger: logger,

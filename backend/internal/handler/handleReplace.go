@@ -2,6 +2,7 @@ package handler
 
 import (
 	"archive/zip"
+	"context"
 	"document-parser/internal/utils"
 	"fmt"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/gorilla/mux"
 	jsoniter "github.com/json-iterator/go"
@@ -56,11 +58,17 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
 	log.Print("ReadAll")
 	body, err := io.ReadAll(r.Body)
 	r.Body.Close()
 
 	if err != nil {
+		if ctx.Err() == context.DeadlineExceeded {
+			log.Println("Request body read timed out")
+		}
 		log.Printf("Error reading request body: %v", err)
 		http.Error(w, "Unable to read request body", http.StatusInternalServerError)
 		return
