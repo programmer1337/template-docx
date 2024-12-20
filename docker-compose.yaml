@@ -16,7 +16,7 @@ services:
       context: ./frontend/
       dockerfile: ./Dockerfile
       args:
-        API_URL: webontology.ru:3080
+        API_URL: webontology.ru:9090
     ports:
       - "80:80"
     networks:
