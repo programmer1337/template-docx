@@ -2,18 +2,16 @@ package handler
 
 import (
 	"archive/zip"
-	"context"
 	"document-parser/internal/utils"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/gorilla/mux"
-	jsoniter "github.com/json-iterator/go"
 	"github.com/lukasjarosch/go-docx"
 )
 
@@ -44,6 +42,8 @@ type Conteragent struct {
 
 type Conteragents []*Conteragent
 
+type KeyConteragents struct{}
+
 func HandleReplace(serveMux *mux.Router, log *log.Logger) {
 	postRouter := serveMux.Methods(http.MethodPost).Subrouter()
 	postRouter.HandleFunc("/api/replace", Replace)
@@ -56,35 +56,36 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(r.Context(), 60*time.Second)
-	defer cancel()
+	// ctx, cancel := context.WithTimeout(r.Context(), 60*time.Second)
+	// defer cancel()
 
 	log.Print("ReadAll")
-	body, err := io.ReadAll(r.Body)
-	r.Body.Close()
+	// body, err := io.ReadAll(r.Body)
+	// r.Body.Close()
 
-	if err != nil {
-		if ctx.Err() == context.DeadlineExceeded {
-			log.Println("Request body read timed out")
-		}
-		log.Printf("Error reading request body: %v", err)
-		http.Error(w, "Unable to read request body", http.StatusInternalServerError)
-		return
-	}
+	// if err != nil {
+	// 	if ctx.Err() == context.DeadlineExceeded {
+	// 		log.Println("Request body read timed out")
+	// 	}
+	// 	log.Printf("Error reading request body: %v", err)
+	// 	http.Error(w, "Unable to read request body", http.StatusInternalServerError)
+	// 	return
+	// }
 
-	fmt.Printf("Received body: %s\n", string(body))
+	conteragents := Conteragents{}
 
-	log.Print("jsoniter")
-	var conteragents Conteragents
-	var json = jsoniter.ConfigCompatibleWithStandardLibrary
-	err = json.Unmarshal(body, &conteragents)
+	// log.Print("jsoniter")
+	// var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	// err = json.Unmarshal(body, &conteragents)
 
-	// err := json.NewDecoder(r.Body).Decode(&conteragents)
+	err := json.NewDecoder(r.Body).Decode(&conteragents)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	fmt.Printf("Received body: %s\n", conteragents)
 
 	log.Print("RemoveAll")
 	err = os.RemoveAll("../replaced/")
