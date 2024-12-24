@@ -15,7 +15,7 @@ import (
 	"github.com/lukasjarosch/go-docx"
 )
 
-type Conteragent struct {
+type Counterparty struct {
 	Code_ou                               string `json:"code_ou"`
 	Inn                                   string `json:"inn"`
 	Institution_short_name                string `json:"institution_short_name"`
@@ -40,9 +40,9 @@ type Conteragent struct {
 	Category                              string `json:"category"`
 }
 
-type Conteragents []*Conteragent
+type Counterparties []*Counterparty
 
-type KeyConteragents struct{}
+type Keycounterparties struct{}
 
 func HandleReplace(serveMux *mux.Router, log *log.Logger) {
 	postRouter := serveMux.Methods(http.MethodPost).Subrouter()
@@ -60,16 +60,19 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 	// defer cancel()
 
 	log.Print("ReadAll")
-	body, err := io.ReadAll(r.Body)
+	var testBody = r.Body
+	body, err := io.ReadAll(testBody)
 	r.Body.Close()
 
-	conteragents := Conteragents{}
+	counterparties := Counterparties{}
 
 	if err != nil {
 		log.Printf("Error reading request body: %v", err)
+		http.Error(w, "Unable to read request body", http.StatusInternalServerError)
+		return
 	}
 
-	err = json.Unmarshal(body, &conteragents)
+	err = json.Unmarshal(body, &counterparties)
 	// if err != nil {
 	// 	fmt.Println(w, "can't unmarshal: ", err.Error())
 	// }
@@ -83,21 +86,21 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	// err := json.NewDecoder(r.Body).Decode(&conteragents)
-	// fmt.Printf("Received body: %s\n", conteragents)
+	// err := json.NewDecoder(r.Body).Decode(&counterparties)
+	// fmt.Printf("Received body: %s\n", counterparties)
 
 	log.Print("jsoniter")
 
 	// var json = jsoniter.ConfigCompatibleWithStandardLibrary
-	// err = json.Unmarshal(body, &conteragents)
+	// err = json.Unmarshal(body, &counterparties)
 
-	// err := json.NewDecoder(r.Body).Decode(&conteragents)
+	// err := json.NewDecoder(r.Body).Decode(&counterparties)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	fmt.Printf("Received body: %s\n", conteragents)
+	fmt.Printf("Received body: %s\n", counterparties)
 
 	log.Print("RemoveAll")
 	err = os.RemoveAll("../replaced/")
@@ -106,8 +109,8 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Print("conteragents")
-	for _, conteragent := range conteragents {
+	log.Print("counterparties")
+	for _, conteragent := range counterparties {
 		// log.Println(pos, conteragent)
 
 		replaceMap := docx.PlaceholderMap{
