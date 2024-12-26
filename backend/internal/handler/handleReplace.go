@@ -38,6 +38,7 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to read request body", http.StatusInternalServerError)
 		return
 	}
+	defer r.Body.Close()
 
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	err = json.Unmarshal(body, &counterparties)
