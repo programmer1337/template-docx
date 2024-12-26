@@ -33,15 +33,17 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 	counterparties := entity.Counterparties{}
 
 	log.Print("ReadAll")
-	body, err := io.ReadAll(r.Body)
+	body := new(bytes.Buffer)
+	_, err := io.Copy(body, r.Body)
 	if err != nil {
 		log.Printf("Error reading request body: %v", err)
 		http.Error(w, "Unable to read request body", http.StatusInternalServerError)
 		return
 	}
+	defer r.Body.Close()
 
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
-	err = json.Unmarshal(body, &counterparties)
+	err = json.Unmarshal(body.Bytes(), &counterparties)
 	fmt.Printf("Received body: %v", counterparties)
 
 	err = os.RemoveAll("../replaced/")
