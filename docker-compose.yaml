@@ -16,7 +16,7 @@ services:
       context: ./frontend/
       dockerfile: ./Dockerfile
       args:
-        API_URL: webontology.ru:8000
+        API_URL: 195.133.50.157:8000
     ports:
       - "80:80"
     networks:
@@ -30,8 +30,7 @@ services:
       context: ./backend/
       dockerfile: ./cmd/Dockerfile
     environment:
-      DOMAIN_URL: localhost
-      ORIGIN: webontology.ru
+      ORIGIN: http://195.133.50.157/, http://webontology.ru, http://localhost:8080
       TZ: Europe/Moscow
     volumes:
       - /etc/timezone:/etc/timezone:ro

@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/rs/cors"
@@ -17,9 +18,11 @@ type Server struct {
 }
 
 func NewServer(handler http.Handler, logger *log.Logger) *Server {
-	domain := os.Getenv("ORIGIN")
-	origins := []string{"http://" + domain, "https://" + domain, "http://localhost:8080"}
-	logger.Print(origins)
+	eOrigin := os.Getenv("ORIGIN")
+	origins := []string{}
+	for _, str := range strings.Split(eOrigin, ",") {
+		origins = append(origins, strings.TrimSpace(str))
+	}
 
 	return &Server{
 		httpServer: &http.Server{
