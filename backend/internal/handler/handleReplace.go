@@ -1,10 +1,9 @@
 package handler
 
 import (
-	"archive/zip"
-	"bytes"
 	entity "document-parser/internal/domain"
 	"document-parser/internal/utils"
+	"document-parser/pkg/ziputils"
 	"fmt"
 	"io"
 	"log"
@@ -22,6 +21,7 @@ func HandleReplace(serveMux *mux.Router, log *log.Logger) {
 	postRouter.HandleFunc("/api/replace", Replace)
 }
 
+// Функция для замены значения поля структуры по имени
 func Replace(w http.ResponseWriter, r *http.Request) {
 	contentType := r.Header.Get("Content-Type")
 
@@ -32,19 +32,15 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 
 	counterparties := entity.Counterparties{}
 
-	log.Print("ReadAll")
-	body := new(bytes.Buffer)
-	_, err := io.Copy(body, r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		log.Printf("Error reading request body: %v", err)
 		http.Error(w, "Unable to read request body", http.StatusInternalServerError)
 		return
 	}
-	defer r.Body.Close()
 
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
-	err = json.Unmarshal(body.Bytes(), &counterparties)
-	fmt.Printf("Received body: %v", counterparties)
+	err = json.Unmarshal(body, &counterparties)
 
 	err = os.RemoveAll("../replaced/")
 	if err != nil {
@@ -83,27 +79,28 @@ func Replace(w http.ResponseWriter, r *http.Request) {
 		utils.PlaceholderReplacer(pathToTemplate, pathToSave, replaceMap)
 	}
 
+	//TODO Исправить
 	downloadAllFiles(w)
 }
 
 func downloadAllFiles(w http.ResponseWriter) {
-	dir := "../replaced"
+	directory := "../replaced"
 	zipFileName := "all_files.zip"
 
-	filesInDir, err := os.ReadDir(dir)
+	//TODO формировать files с помощью бд
+	files, err := getFiles(directory)
 	if err != nil {
-		http.Error(w, "Error! Can't create zip archive", http.StatusInternalServerError)
+		http.Error(w, "Problem's with file's", http.StatusInternalServerError)
+		return
 	}
 
-	var filesToZip = FilesZipData{
-		directory:     dir,
-		filesDirEntry: filesInDir,
-	}
-
-	buf := new(bytes.Buffer)
-	buf, err = createZipArchive(buf, filesToZip)
+	buf, err := ziputils.CreateZipArchive(ziputils.FilesZipData{
+		Directory: directory,
+		Files:     files,
+	})
 	if err != nil {
-		http.Error(w, "Error! Can't create zip archive", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Error! Can't create zip archive. [%v]", err), http.StatusInternalServerError)
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/zip")
@@ -112,62 +109,24 @@ func downloadAllFiles(w http.ResponseWriter) {
 
 	_, err = buf.WriteTo(w)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Can't add to buffer: %v", err.Error()), http.StatusInternalServerError)
 		return
 	}
 }
 
-//--------------------------------//
-//          ZIP ARCHIVE           //
-
-type FilesZipData struct {
-	directory     string
-	filesDirEntry []os.DirEntry
-}
-
-func createZipArchive(buffer *bytes.Buffer, files FilesZipData) (*bytes.Buffer, error) {
-	zipWriter := zip.NewWriter(buffer)
-	defer zipWriter.Close()
-
-	for _, file := range files.filesDirEntry {
-		err := addFileToZip(zipWriter, filepath.Join(files.directory, file.Name()), file.Name())
-		if err != nil {
-			return nil, fmt.Errorf("Ошибка при добавлении файла в архив: %v", err)
-		}
-	}
-
-	return buffer, nil
-}
-
-func addFileToZip(zipWriter *zip.Writer, filePath string, fileName string) error {
-	file, err := os.Open(filePath)
+func getFiles(directory string) ([]ziputils.File, error) {
+	filesDirEntry, err := os.ReadDir(directory)
 	if err != nil {
-		return fmt.Errorf("Ошибка при открытии файла %s: %v", filePath, err)
-	}
-	defer file.Close()
-
-	fileInfo, err := file.Stat()
-	if err != nil {
-		return fmt.Errorf("Ошибка при получении информации о файле %s: %v", filePath, err)
+		return nil, fmt.Errorf("Error! Can't create zip archive")
 	}
 
-	zipFileHeader, err := zip.FileInfoHeader(fileInfo)
-	if err != nil {
-		return fmt.Errorf("Ошибка при создании заголовка файла %s: %v", filePath, err)
+	files := []ziputils.File{}
+	for _, file := range filesDirEntry {
+		files = append(files, ziputils.File{
+			Name:      file.Name(),
+			Directory: filepath.Join(directory, file.Name()),
+		})
 	}
 
-	zipFileHeader.Name = fileName
-	zipFileHeader.Method = zip.Deflate
-
-	zipWriterEntry, err := zipWriter.CreateHeader(zipFileHeader)
-	if err != nil {
-		return fmt.Errorf("Ошибка при создании записи для файла %s: %v", filePath, err)
-	}
-
-	_, err = io.Copy(zipWriterEntry, file)
-	if err != nil {
-		return fmt.Errorf("Ошибка при копировании данных файла %s в архив: %v", filePath, err)
-	}
-
-	return nil
+	return files, nil
 }

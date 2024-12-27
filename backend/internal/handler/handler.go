@@ -11,7 +11,7 @@ func NewHandler(logger *log.Logger) http.Handler {
 	serveMux := mux.NewRouter()
 
 	HandleReplace(serveMux, logger)
-	// TokenHandler(serveMux, logger)
+	HandleCounterparty(serveMux, logger)
 
 	return serveMux
 }
