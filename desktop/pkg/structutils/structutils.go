@@ -5,6 +5,9 @@ import (
 	"reflect"
 )
 
+// Get value of field from provided interface
+// if it possible return value
+// else throw 'error field doesn't exist'
 func GetFieldValue(s interface{}, fieldName string) (*reflect.Value, error) {
 	v := reflect.ValueOf(s).Elem()
 	field := v.FieldByName(fieldName)
@@ -16,6 +19,8 @@ func GetFieldValue(s interface{}, fieldName string) (*reflect.Value, error) {
 	return &field, nil
 }
 
+// Set value to the provided interface if it possible
+// else throw error
 func SetFieldValue(s interface{}, fieldName string, value interface{}) error {
 	v := reflect.ValueOf(s).Elem()
 	field := v.FieldByName(fieldName)
@@ -32,6 +37,7 @@ func SetFieldValue(s interface{}, fieldName string, value interface{}) error {
 	return nil
 }
 
+// Get all fieldnames of provided object
 func GetStructFieldNames(i interface{}) []string {
 	var fieldNames []string
 	val := reflect.ValueOf(i)

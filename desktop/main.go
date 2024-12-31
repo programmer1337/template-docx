@@ -3,6 +3,7 @@ package main
 import (
 	entity "desktop-templater-docx/internal/domain"
 	"desktop-templater-docx/pkg/customui"
+	"desktop-templater-docx/pkg/sliceutils"
 	"desktop-templater-docx/pkg/structutils"
 	"fmt"
 	"io"
@@ -26,22 +27,10 @@ func main() {
 	w := app.NewWindow("Работа с контрагентами")
 
 	counterpartiesList := entity.Counterparties{}
-
-	// list := widget.NewList(
-	// 	func() int { return len(counterpartiesList) },
-	// 	func() fyne.CanvasObject {
-	// 		// return widget.NewLabel("test")
-	// 		// return widget.NewCheck("test", func(changed bool) {})
-	// 		// return newTappableLabel("test")
-	// 		return customui.NewMyListItemWidget("test title", "test comment", func(changed bool) {})
-	// 	},
-	// 	func(i int, o fyne.CanvasObject) {
-	// 		comment := counterpartiesList[i].Institution_short_name + " | " + counterpartiesList[i].Responsible_person_short_name + " | " + counterpartiesList[i].City
-	// 		o.(*customui.MyListItemWidget).SetText(counterpartiesList[i].Inn, comment)
-	// 	},
-	// )
-
+	customListItems := []*customui.MyListItemWidget{}
 	listContainer := container.NewVBox()
+
+	selectedItems := []*int{}
 
 	// list.OnSelected = func(id int) {
 	// 	fmt.Println(id)
@@ -104,11 +93,17 @@ func main() {
 	// 	editWindow.SetContent(editContent)
 	// 	editWindow.Show()
 	// }
-	button := widget.NewButton("Загрузить файл", func() {
+
+	selectAllButton := widget.NewButton("Выбрать все", func() {
+		for i := range len(customListItems) {
+			customListItems[i].Check.SetChecked(true)
+		}
+	})
+	loadButton := widget.NewButton("Загрузить файл", func() {
 		fileDialog := dialog.NewFileOpen(
 			func(uc fyne.URIReadCloser, err error) {
 				if err != nil {
-					println("Ошибка при открытии файла:", err.Error())
+					fmt.Printf("Error while opening: %v", err)
 					return
 				}
 				if uc != nil {
@@ -117,26 +112,35 @@ func main() {
 						fmt.Printf("Programm stop with error [%v]", err)
 					}
 
-					println("Выбран файл:", uc.URI().Path())
+					fmt.Printf("Выбран файл: %s\n", uc.URI().Path())
 					counterpartiesList = append(counterpartiesList, *counterparties...)
-					for _, c := range counterpartiesList {
+					for pos, c := range counterpartiesList {
 						comment := c.Institution_short_name + " | " + c.Responsible_person_short_name + " | " + c.City
-						listContainer.Add(customui.NewMyListItemWidget(c.Inn, comment, func(changed bool) {}))
-					}
-					for _, c := range counterpartiesList {
-						comment := c.Institution_short_name + " | " + c.Responsible_person_short_name + " | " + c.City
-						listContainer.Add(customui.NewMyListItemWidget(c.Inn, comment, func(changed bool) {}))
-					}
-					for _, c := range counterpartiesList {
-						comment := c.Institution_short_name + " | " + c.Responsible_person_short_name + " | " + c.City
-						listContainer.Add(customui.NewMyListItemWidget(c.Inn, comment, func(changed bool) {}))
+						customListItems = append(customListItems, customui.NewMyListItemWidget(
+							c.Inn,
+							comment,
+							func(changed bool) {
+								if changed {
+									selectedItems = append(selectedItems, &pos)
+								} else {
+									selectedItems = sliceutils.RemoveByValue(selectedItems, &pos)
+								}
+								fmt.Printf("%v was changed: %v\n", pos, changed)
+								fmt.Printf("selected items was changed: %v\n", selectedItems)
+							},
+							func() {
+								fmt.Printf("Was tapped: %v\n", pos)
+							}))
 					}
 
-					listContainer.Refresh()
-					// list.Refresh()
+					for _, item := range customListItems {
+						listContainer.Add(item)
+					}
+
+					// listContainer.Refresh()
 					uc.Close()
 				} else {
-					println("Файл не выбран")
+					fmt.Println("Файл не выбран")
 				}
 			}, w)
 
@@ -144,58 +148,13 @@ func main() {
 	})
 
 	processTemplateButton := widget.NewButton("Сформировать договора", func() {})
-
-	// content := container.NewBorder(container.NewVBox(button), nil, nil, nil, container.NewScroll(list))
-	content := container.NewBorder(container.NewVBox(button), container.NewVBox(processTemplateButton), nil, nil, container.NewScroll(listContainer))
+	content := container.NewBorder(container.NewVBox(selectAllButton, loadButton), container.NewVBox(processTemplateButton), nil, nil, container.NewScroll(listContainer))
 
 	w.SetContent(content)
 
 	w.Resize(fyne.NewSize(1280, 720))
 	w.ShowAndRun()
 }
-
-// func main() {
-// 	myApp := app.New()
-// 	myWindow := myApp.NewWindow("Custom List with Checkboxes and Buttons")
-
-// 	// Исходные данные для списка
-// 	data := []string{
-// 		"Item 1", "Item 2", "Item 3", "Item 4", "Item 5",
-// 	}
-
-// 	// Список для хранения состояний чекбоксов
-// 	checkboxes := make([]*widget.Check, len(data))
-// 	buttons := make([]*widget.Button, len(data))
-
-// 	// Функция для обработки клика по кнопке
-// 	handleClick := func(item string) {
-// 		fmt.Printf("Button clicked for: %s\n", item)
-// 	}
-
-// 	// Создание контейнера с элементами
-// 	var listItems []fyne.CanvasObject
-// 	for i, item := range data {
-// 		// Создаем чекбокс
-// 		checkboxes[i] = widget.NewCheck(item, nil)
-
-// 		// Создаем кнопку
-// 		buttons[i] = widget.NewButton("Click Me", func() {
-// 			handleClick(item) // Обрабатываем клик по кнопке
-// 		})
-
-// 		// Контейнер для чекбокса и кнопки
-// 		listItems = append(listItems, container.NewHBox(checkboxes[i], buttons[i]))
-// 	}
-
-// 	// Размещение элементов в контейнере VBox
-// 	listContainer := container.NewVBox(listItems...)
-
-// 	// Устанавливаем содержимое окна
-// 	myWindow.SetContent(listContainer)
-
-// 	// Показываем окно
-// 	myWindow.ShowAndRun()
-// }
 
 func loadCounterparties(reader io.Reader) (*entity.Counterparties, error) {
 	file, err := excelize.OpenReader(reader)
