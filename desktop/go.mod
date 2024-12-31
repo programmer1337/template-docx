@@ -2,7 +2,12 @@ module desktop-templater-docx
 
 go 1.23.1
 
-require fyne.io/fyne/v2 v2.5.3
+require (
+	fyne.io/fyne/v2 v2.5.3
+	github.com/lukasjarosch/go-docx v0.5.0
+	github.com/nguyenthenguyen/docx v0.0.0-20230621112118-9c8e795a11db
+	github.com/xuri/excelize/v2 v2.9.0
+)
 
 require (
 	fyne.io/systray v1.11.0 // indirect
@@ -31,7 +36,6 @@ require (
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/xuri/efp v0.0.0-20240408161823-9ad904a10d6d // indirect
-	github.com/xuri/excelize/v2 v2.9.0 // indirect
 	github.com/xuri/nfp v0.0.0-20240318013403-ab9948c2c4a7 // indirect
 	github.com/yuin/goldmark v1.7.1 // indirect
 	golang.org/x/crypto v0.28.0 // indirect
