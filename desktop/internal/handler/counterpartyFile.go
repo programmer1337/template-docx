@@ -87,13 +87,19 @@ func (cfh *CounterpartyFileHandler) LoadCounterparties() (entity.Counterparties,
 }
 
 func (cfh *CounterpartyFileHandler) SaveCounterparties(counterparties entity.Counterparties) {
+	if cfh.file == nil {
+		return
+	}
+
 	sheet := cfh.file.GetSheetList()[0]
 
 	for row := 0; row <= len(counterparties)-1; row++ {
 		counterparty := structutils.GetStructValues(*counterparties[row])
 
 		for col := 0; col <= len(counterparty)-1; col++ {
-			err := cfh.file.SetCellValue(sheet, fmt.Sprintf("%v%v", string('A'+col), row+2), counterparty[col])
+			cell := fmt.Sprintf("%v%v", string('A'+rune(col)), row+2)
+
+			err := cfh.file.SetCellValue(sheet, cell, counterparty[col])
 			if err != nil {
 				log.Printf("Error setting cell %c%d: %v\n", col, row, err)
 			}
