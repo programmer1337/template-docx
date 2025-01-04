@@ -1,0 +1,21 @@
+@startuml test
+skinparam actorStyle awesome
+
+actor :Работник: as Worker
+
+package "Work with counterparties" {
+usecase (Сформировать договора) as CreateContract
+usecase (Удалить контрагентов) as DeleteCounterparties
+usecase (Изменить контрагентов) as ChangeCounterparties
+usecase (Добавить контрагентов) as AddCounterparties
+usecase (Сохранить контрагентов в xlsx) as SaveToXlsx
+usecase (Загрузить контрагентов через xlsx) as LoadFromXlsx
+}
+
+Worker --> LoadFromXlsx
+Worker --> AddCounterparties
+Worker --> ChangeCounterparties
+Worker --> DeleteCounterparties
+Worker --> SaveToXlsx
+Worker --> CreateContract
+@enduml

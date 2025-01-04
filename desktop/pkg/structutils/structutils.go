@@ -5,9 +5,9 @@ import (
 	"reflect"
 )
 
-// Get value of field from provided interface
-// if it possible return value
-// else throw 'error field doesn't exist'
+// Get value of field from provided interface.
+// If it possible return value.
+// Else throw 'error field doesn't exist'
 func GetFieldValue(s interface{}, fieldName string) (*reflect.Value, error) {
 	v := reflect.ValueOf(s).Elem()
 	field := v.FieldByName(fieldName)
@@ -49,4 +49,18 @@ func GetStructFieldNames(i interface{}) []string {
 	}
 
 	return fieldNames
+}
+
+func GetStructValues(i interface{}) []any {
+	values := []any{}
+	testStruct := i
+	v := reflect.ValueOf(testStruct)
+
+	for i := 0; i < v.NumField(); i++ {
+		field := v.Field(i)
+		values = append(values, field)
+		// fmt.Printf("Поле: %s, Тип: %v\n", field.Name, field.Type)
+	}
+
+	return values
 }
