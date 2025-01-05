@@ -5,21 +5,19 @@ import (
 	"desktop-templater-docx/pkg/structutils"
 	"fmt"
 	"io"
-	"log"
 
 	"github.com/xuri/excelize/v2"
 )
 
-// TODO
-// - вернуть заголовки
-// - полученные заголовки закинуть в именование полей формы
 type CounterpartyFileHandler struct {
-	file *excelize.File
+	file         *excelize.File
+	tableHandler *XlsxTableHandler
 }
 
 func NewCounterpartyFileHandler() *CounterpartyFileHandler {
 	return &CounterpartyFileHandler{
-		file: nil,
+		file:         nil,
+		tableHandler: NewXlsxTableHandler(),
 	}
 }
 
@@ -35,7 +33,7 @@ func (cfh *CounterpartyFileHandler) SetCounterpartiesFileByReader(reader io.Read
 }
 
 func (cfh *CounterpartyFileHandler) LoadCounterparties() (entity.Counterparties, error) {
-	rows, err := cfh.file.GetRows(cfh.file.GetSheetList()[0])
+	rows, err := cfh.tableHandler.GetRows(cfh.file, cfh.file.GetSheetList()[0])
 	if err != nil {
 		return nil, err
 	}
@@ -46,31 +44,7 @@ func (cfh *CounterpartyFileHandler) LoadCounterparties() (entity.Counterparties,
 		headers := rows[0]
 
 		for _, row := range rows[1:] {
-			//TODO подумать
-			counterparty := entity.Counterparty{
-				Code_ou:                               "",
-				Inn:                                   "",
-				Institution_short_name:                "",
-				Institution_full_name:                 "",
-				Address:                               "",
-				City:                                  "",
-				Bank_details:                          "",
-				Responsible_person_job_title:          "",
-				Responsible_person_short_name:         "",
-				Responsible_person_full_name:          "",
-				Responsible_person_full_name_genitive: "",
-				Acting_on:                             "",
-				Ikz_2025:                              "",
-				Source_funding:                        "",
-				Email:                                 "",
-				Phone_number:                          "",
-				Contract_form:                         "",
-				Contract_type:                         "",
-				Contract_number:                       "",
-				Contract_formation_data:               "",
-				Responsible_person_job_title_genetive: "",
-				Category:                              "",
-			}
+			var counterparty entity.Counterparty
 
 			for i, value := range row {
 				err = structutils.SetFieldValue(&counterparty, entity.CounterpartyRuEngMap[headers[i]], value)
@@ -93,19 +67,15 @@ func (cfh *CounterpartyFileHandler) SaveCounterparties(counterparties entity.Cou
 
 	sheet := cfh.file.GetSheetList()[0]
 
+	formattedData := [][]any{}
+
 	for row := 0; row <= len(counterparties)-1; row++ {
 		counterparty := structutils.GetStructValues(*counterparties[row])
 
-		for col := 0; col <= len(counterparty)-1; col++ {
-			cell := fmt.Sprintf("%v%v", string('A'+rune(col)), row+2)
-
-			err := cfh.file.SetCellValue(sheet, cell, counterparty[col])
-			if err != nil {
-				log.Printf("Error setting cell %c%d: %v\n", col, row, err)
-			}
-		}
+		formattedData = append(formattedData, counterparty)
 	}
 
 	// fmt.Println(cfh.file.Path)
+	cfh.tableHandler.UpdateTable(cfh.file, sheet, formattedData)
 	cfh.file.Save()
 }
